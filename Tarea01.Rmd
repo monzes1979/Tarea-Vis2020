@@ -9,18 +9,16 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# -**Los municipios con menos pobreza extrema en el país**-
 
-<p>Practicar la realización de mapas y gráficos interactivos y no interactivos, aplicando estos conocimientos prácticos en datos de su interés</p>
+<p>Este proyecto representa un análisis de los municipios con menor porcentaje de pobreza extrema en México en 2010, como un reflejo de la desigualdad en ese año. Esto último porque estos 15 municipios con menos pobreza extrema están concentrados particularmente en Distrito Federal, Nuevo León y Sonora, mientras que el resto está en Coahuila, Colima y Querétaro </p>
 
-Elabore un documento en HTML (en RMarkdown) que contenga al menos 4 de los siguientes 5 elementos:
+<b style = 'color:red;'>**Gráficas**</b>
 
-#Una gráfica en ggplot. 
-#Un mapa estático en ggplot.
-#Una gráfica en plotly (u otra librería de visualización interactiva)
-#Un mapa en leaflet (u otra librería de visualización interactiva)
-#Una tabla
+<p>La primera gráfica muestra estas 15 localidades, con el color de cada una según corresponde a los estados.<br> La segunda es la misma gráfica pero interactiva, mostrando el estado y el valor, es decir, el porcentaje de pobreza extrema de su población. 
 
-```{r}
+
+```{r,echo=FALSE, warning=FALSE, message=FALSE, cache=FALSE, error=FALSE}
 library(tidyverse)
 library(sf)
 library(leaflet)
@@ -35,20 +33,9 @@ mpios <- st_read("https://raw.githubusercontent.com/JuveCampos/Shapes_Resilienci
 
 edo <- st_read("https://raw.githubusercontent.com/JuveCampos/MexicoSinIslas/master/Sin_islas.geojson", quiet = TRUE)
 
-pobrezaExtrema$Entidad %>% 
-  unique()
-
 pobreza <- pobrezaExtrema %>% 
   filter (Entidad == "Coahuila" | Entidad == "Colima" | Entidad == "Distrito Federal" | Entidad == "Nuevo León" | Entidad == "Querétaro" | Entidad == "Sonora") %>% 
   filter(Valor < 0.8 & Year == "2010")
-
-mpios$NOM_ENT %>% unique()
-glimpse(pobrezaExtrema)
-
-summary(pobrezaExtrema$Valor)
-
-sort(pobrezaExtrema$Valor, decreasing = T) %>% 
-  tail(n=20)
 
 pobreza <- pobrezaExtrema %>% 
   filter (Valor < 0.8 & Year == "2010")
@@ -60,7 +47,7 @@ pobreza %>%
              y = Valor, fill = Entidad, text = paste0("<b>Entidad: </b>", Entidad, "<br>", "<b>Valor: </b>", Valor, "<br>")))+
   geom_col()+
   coord_flip() +
-  labs (title = "Los municipios con menor porcentaje de pobreza extrema de 2010")+
+  labs (title = "Municipios con menos pobreza extrema en 2010")+
   scale_fill_manual(values= c("orange", 
                               "brown", 
                               "steelblue", 
@@ -73,8 +60,11 @@ pobreza %>%
 ####HACER UNA GRÁFICA INTERACTIVA
 ggplotly(tooltip = "text") %>% 
   config(displayModeBar = F)
+```
 
+<br> La tercera parte es un mapa estático que muestra las entidades y los municipios, mientras que el segundo mapa es interactivo, al reflejar el nombre de estas localidades</p>
 
+```{r,echo=FALSE, warning=FALSE, message=FALSE, cache=FALSE, error=FALSE}
 ####UN MAPA ESTÁTICO EN GGPLOT
 
 nuevoobjeto <- pobrezaExtrema %>% 
@@ -85,14 +75,6 @@ mapa <- merge(x = mpios,
               all.y = TRUE, 
               by.x = "CVE_MUN",
               by.y = "CVE_MUN")
-
-nuevoobjeto$CVE_MUN %>% 
-  unique()
-
-mpios$CVE_MUN %>% 
-  unique()
-
-class(mapa)
 
 mapa %>% 
   ggplot(aes(fill = Valor)) +
@@ -109,4 +91,3 @@ leaflet(mapa) %>%
   addPolygons(data = mpios, fill = "white", color = "black") %>% 
   addPolygons(opacity = 0.3, popup = paste0("<b>Municipio: </b>", mapa$Municipio, "<br>", "Valor:", mapa$Valor))
 ```
-pobrezaEx
